@@ -14,7 +14,6 @@ def get_crypto_data():
         response_cbr = requests.get(url_cbr)
         data_cbr = response_cbr.json()
         rate_usd = data_cbr['Valute']['USD']['Value']
-        print(f'курс доллара США - {rate_usd}')
     except Exception as e:
         messagebox.showinfo("Ошибка", f"Не удалось обновить курс доллара США: {e}")
     url = "https://api.coingecko.com/api/v3/coins/markets"
@@ -42,12 +41,11 @@ def update_crypto_data():
     try:
         available_currencies = []
         for i,crypto in enumerate(data):
-            xxx=str(i+1)
             crypto_name = crypto['name']
             available_currencies.append(crypto_name)
             crypto_price = f"${crypto['current_price']:,.2f}"
             crypto_change = f"{crypto['price_change_percentage_24h']:.2f}%"
-            table.item(xxx, values=(crypto_name, crypto_price, crypto_change))
+            table.item(i, values=(crypto_name, crypto_price, crypto_change))
         available_currencies.append('USD')
         available_currencies.append('RUB')
         from_combo.config(values=available_currencies)
@@ -72,14 +70,11 @@ def convert_crypto():
     rates = {crypto['name']: crypto['current_price'] for crypto in data}
     rates['USD'] = 1  # Для конвертации в USD
     rates['RUB'] = 1/rate_usd
-    print(rates['RUB'])
 
     try:
         amount = float(amount)
         from_rate = rates.get(from_currency, None)
         to_rate = rates.get(to_currency, None)
-        print(from_rate,from_currency)
-        print(to_rate,to_currency)
         if from_rate and to_rate:
             converted_amount = amount * (from_rate / to_rate)
             result_label.config(text=f"{amount:.2f} {from_currency} = {converted_amount:.2f} {to_currency}")
@@ -94,17 +89,19 @@ rate_usd=0
 root = tk.Tk()
 root.title("Курсы криптовалют и конвертер")
 root.geometry("600x800")
+root.iconbitmap(r'logo.ico')
 # Заголовок
-header_label = tk.Label(root, text="Текущие курсы популярных криптовалют", font=("Arial", 16))
-header_label.pack(pady=10)
-
+header_label = tk.Label(root, text="Курсы популярных криптовалют", font=("Arial", 14))
+header_label.pack()
+header_label = tk.Label(root, text="TOP-20 криптовалют по рыночной капитализации", font=("Arial", 16),fg='grey')
+header_label.pack()
 # Таблица для отображения данных
 columns = ('Название', 'Цена USD', 'Изменение (24ч)')
 table = ttk.Treeview(root, columns=columns, show='headings')
 table.heading('Название', text='Название')
 table.heading('Цена USD', text=f'Цена USD')
 table.heading('Изменение (24ч)', text='Изменение (24ч)')
-table.pack(pady=20, fill='both', expand=True)
+table.pack(pady=10, fill='both', expand=True)
 #table.heading('Цена',text='Цена RUB')
 # Добавление начальных данных
 for i in range(21):
@@ -153,6 +150,5 @@ update_button.pack(pady=10)
 
 # Первоначальное обновление данных
 update_crypto_data()
-print(available_currencies)
 # Запуск основного цикла интерфейса
 root.mainloop()
